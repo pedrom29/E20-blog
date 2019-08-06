@@ -1,9 +1,30 @@
 require 'test_helper'
 
 class PostsControllerTest < ActionDispatch::IntegrationTest
+  include Devise::Test::IntegrationHelpers
+
   setup do
     @post = posts(:one)
   end
+
+  test "user should delete his own post" do
+    current_user = users(:one)
+    sign_in(current_user)
+    assert_difference('Post.count', -1) do
+      delete post_path(posts(:one))
+    end
+  end
+
+
+  test "user should not delete others post" do
+    current_user = users(:one)
+    sign_in(current_user)
+    assert_difference('Post.count', 0) do
+      delete post_path(posts(:two))
+    end
+    assert_redirected_to root_url
+  end
+
 
   test "should get index" do
     get posts_url
